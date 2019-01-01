@@ -35,7 +35,7 @@ updateBadge('?', GRAY);
 // Check whether new version is installed
 chrome.runtime.onInstalled.addListener(function (details) {
     if (details.reason == "install") {
-        chrome.storage.local.set({ 'state': false, 'domains': {} });
+        chrome.storage.local.set({ 'state': false, 'hostnames': {} });
         turnOff();
     } else if (details.reason == "update") {
         var thisVersion = chrome.runtime.getManifest().version;

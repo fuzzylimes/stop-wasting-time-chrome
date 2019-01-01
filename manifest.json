@@ -12,8 +12,10 @@
     "background": {
         "scripts": [
             "js/backgroundBadgeManagement.js",
+            "js/handlePageUpdates.js",
             "js/backgroundTimeTracking.js",
-            "js/badgeFormatting.js"
+            "js/badgeFormatting.js",
+            "js/dateHelper.js"
         ],
         "persistent": false
     },
