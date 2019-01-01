@@ -1,22 +1,33 @@
 let activeTabId = 0;
 let timeOnPage = 0;
+let counterProcessId = 0;
 let currentHostname = null;
+
+const UPDATE_TIME_IN_MS = 1000;
 
 let currentHostnameValues = null;
 
 
 function handleUpdate(tabId, changeInfo, tab) {
-    // console.log(tabId);
-    // console.log(changeInfo);
-    // console.log(tab);
 
+    console.log(changeInfo);
     if (changeInfo['status'] === 'complete') {
+        console.log(JSON.stringify(tab));
         if (typeof tab !== 'undefined') {
             var hostname = getUrl(tab.url);
             console.log(hostname + "!");
     
-            if (hostname !== currentHostname) {
-                console.log("Active hostname has changed to " + hostname);
+            console.log(currentHostname)
+            if (matchesCurrentHostname(hostname)) {
+                console.log("Active hostname remains the same " + hostname);
+            } else {
+                try  {
+                    stopTimer();
+                    timeOnPage = 0;
+                } catch(e) {
+                    console.log("No timer running");
+                }
+                startTimer();
                 currentHostname = hostname;
             }
         } else {
@@ -27,30 +38,32 @@ function handleUpdate(tabId, changeInfo, tab) {
     }
 }
 
-function handleStateChange(newState) {
-    console.log(newState);
+function startTimer() {
+    counterProcessId = setInterval(() => {
+        timeOnPage += 1;
+        // chrome.runtime.sendMessage({ updateBadge: true, value: timeOnPage });
+        updateBadge(formatBadgeValue(timeOnPage), PURPLE);
+    }, (UPDATE_TIME_IN_MS));
 }
 
-// function activeTab(activeInfo) {
-//     var newTabId = activeInfo['tabId'];
-//     console.log(activeTabId + " is no longer active.")
-//     console.log("Active tab is now " + newTabId);
-//     activeTabId = newTabId;
+function stopTimer() {
+    clearInterval(counterProcessId);
+}
 
-//     var newTabUrl = getTabUrl(newTabId);
-//     console.log("TabUrl: " + newTabUrl);
-// }
+function handleStateChange(newState) {
+    // TODO: add logic for state changes idle, locked, active
+}
 
 function activeTab(activeInfo) {
     var newTabId = activeInfo['tabId'];
     console.log(activeTabId + " is no longer active.")
     console.log("Active tab is now " + newTabId);
-    // activeTabId = newTabId;
+    activeTabId = newTabId;
 
-    // var newTabUrl = getTabUrl(newTabId);
-    // console.log("TabUrl: " + newTabUrl);
+    // var tabInfo = getTab(newTabId);
 
-    handleUpdate(newTabId, {'status': 'complete'}, getTab(newTabId));
+    getTabForUpdate(newTabId, handleUpdate);
+    // handleUpdate(newTabId, {'status': 'complete'}, tabInfo);
 }
 
 function doesHostnameExist(hostName) {
@@ -60,10 +73,11 @@ function doesHostnameExist(hostName) {
     });
 }
 
-function getTab(tabId) {
+function getTabForUpdate(tabId, callback) {
     chrome.tabs.get(tabId, (tab) => {
-        console.log("new tab info " + tab);
-        return tab;
+        // console.log(JSON.stringify(tab));
+        // console.log(typeof tab);
+        callback(tabId, {'status': 'complete'}, tab);
     });
 }
 
@@ -77,7 +91,7 @@ function getUrl(url) {
 }
 
 function matchesCurrentHostname(hostname) {
-    return 
+    return currentHostname === hostname;
 }
 
 

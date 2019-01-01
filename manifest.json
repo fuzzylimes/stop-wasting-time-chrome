@@ -12,7 +12,8 @@
     "background": {
         "scripts": [
             "js/backgroundBadgeManagement.js",
-            "js/backgroundTimeTracking.js"
+            "js/backgroundTimeTracking.js",
+            "js/badgeFormatting.js"
         ],
         "persistent": false
     },
