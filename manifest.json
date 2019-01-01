@@ -1,0 +1,42 @@
+{
+    "name": "Stop Wasting Time",
+    "version": "0.1",
+    "description": "An extension that tracks the time you spend on websites (and yells at you for wasting your time).",
+    "permissions": [
+        "activeTab",
+        "declarativeContent",
+        "storage",
+        "tabs",
+        "idle"
+    ],
+    "background": {
+        "scripts": [
+            "js/backgroundBadgeManagement.js",
+            "js/backgroundTimeTracking.js"
+        ],
+        "persistent": false
+    },
+    "browser_action": {
+        "default_popup": "html/popup.html",
+        "default_icon": {
+            "128": "img/large.jpg"
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "http://*/*",
+                "https://*/*"
+            ],
+            "js": [
+                "js/replacement.js"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "icons": {
+        "128": "img/large.jpg"
+    },
+    "options_page": "html/options.html",
+    "manifest_version": 2
+}

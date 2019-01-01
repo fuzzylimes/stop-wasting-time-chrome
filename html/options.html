@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/options.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row rule">
+            <div class="col-10">
+                <form>
+                    <div class="form-group">
+                        <label for="string1">Word(s) to be replaced.</label>
+                        <input type="text" class="form-control strings" id="string1" aria-describedby="stringHelp" placeholder="Enter your word(s)/phrases to be matched (pipe | separated list) i.e. words|to|match">
+                        <small id="stringHelp" class="form-text text-muted">Pipe | separated list of values</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="replace1">Word(s) to be replaced with.</label>
+                        <input type="text" class="form-control replace" id="replace1" placeholder="The above word(s) will be replaced with this.">
+                    </div>
+                </form>
+            </div>
+            <div class="col-2 delete-btn">
+                <button type="button" class="btn btn-danger float-right delete">Delete Rule</button>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <button type="button" class="btn btn-primary" id="addRule">Add another rule</button>
+        <button type="button" class="btn btn-success" id="saveRules">Apply/Save</button>
+        <button type="button" class="btn btn-secondary" id="cancel">Cancel</button>
+        <button type="button" class="btn btn-danger float-right" id="clearRules">Delete All Rules</button>
+    </div>
+</body>
+<script src="../js/options.js"></script>
+
+</html>
