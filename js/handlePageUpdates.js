@@ -41,12 +41,18 @@ function saveCurrentHostnameData(callback) {
 
     currentHostnameValues.l = today;
     lastDate < today ? currentHostnameValues.d = timeOnPage : currentHostnameValues.d += timeOnPage;
+    // currentHostnameValues.d = timeOnPage;
     currentHostnameValues.t += timeOnPage;
 
-    var updateObject = {'hostnames': {}};
-    updateObject.hostnames[currentHostname] = currentHostnameValues;
+    chrome.storage.local.get(null, (data) => {
+        data.hostnames[currentHostname] = currentHostnameValues;
+        chrome.storage.local.set(data, callback());
+    });
 
-    chrome.storage.local.set(updateObject, callback());
+    // var updateObject = {'hostnames': {}};
+    // updateObject.hostnames[currentHostname] = currentHostnameValues;
+
+    // chrome.storage.local.set(updateObject, callback());
 }
 
 function handleDefinedTab(tab) {
@@ -67,7 +73,7 @@ function manageTimer(hostname) {
         try {
             stopTimer();
             saveCurrentHostnameData(function() {
-                // timeOnPage = 0;
+                timeOnPage = 0;
                 getRecordsFromStorage(hostname, startTimer);
                 // startController(hostname);
             })
@@ -89,7 +95,7 @@ function manageTimer(hostname) {
 function startTimer() {
     counterProcessId = setInterval(() => {
         timeOnPage += 1;
-        updateBadge(formatBadgeValue(timeOnPage), PURPLE);
+        updateBadge(formatBadgeValue(timeOnPage + currentHostnameValues.d), PURPLE);
     }, (UPDATE_TIME_IN_MS));
 }
 
@@ -115,7 +121,7 @@ function getRecordsFromStorage(record, callback) {
             currentHostnameValues = { l: getCurrentDate(), d: 0, t: 0 };
             console.log(currentHostnameValues);
         }
-        timeOnPage = currentHostnameValues.d;
+        // timeOnPage = currentHostnameValues.d;
         console.log(timeOnPage);
         currentHostname = record;
         callback();
