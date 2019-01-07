@@ -63,11 +63,30 @@ let currentHostnameValues = null;
 // }
 
 function handleStateChange(newState) {
+    console.log(newState);
+    switch (newState) {
+        case "idle":
+        case "locked":
+            saveCurrentHostnameData(function() {
+                stopTimer();
+                timeOnPage = 0;
+            });
+            break;
+        case "active":
+            // getActiveTab(activeTabId);
+            startTimer();
+        default:
+            break;
+    }
     // TODO: add logic for state changes idle, locked, active
 }
 
 function activeTab(activeInfo) {
-    var newTabId = activeInfo['tabId'];
+    getActiveTab(activeInfo.tabId)
+}
+
+function getActiveTab(newTabId) {
+    // var newTabId = activeInfo['tabId'];
     console.log(activeTabId + " is no longer active.")
     console.log("Active tab is now " + newTabId);
     activeTabId = newTabId;
@@ -109,6 +128,12 @@ function getUrl(url) {
 chrome.tabs.onUpdated.addListener(handlePageUpdate);
 chrome.tabs.onActivated.addListener(activeTab);
 chrome.idle.onStateChanged.addListener(handleStateChange);
+chrome.windows.onFocusChanged.addListener(function(windowId) {
+    console.log(windowId);
+    if (windowId != 0) {
+        
+    }
+})
 // chrome.windows.onRemoved.addListener
 // chrome.tabs.onRemoved.addListener(HandleRemove);
 // chrome.tabs.onReplaced.addListener(HandleReplace);
