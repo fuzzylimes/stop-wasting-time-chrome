@@ -1,10 +1,8 @@
-// On an update we need to
-//
-// 1. check to see if the hostname has changed
-// 1a. save off the existing hostname
-// 1b. pull down the new host name
-
-
+/*
+Author: fuzzylimes
+Created: 12/27/2018
+Last: 01/09/2019
+*/
 
 function handlePageUpdate(tabId, changeInfo, tab) {
     var changeStatus = changeInfo.status;
@@ -24,15 +22,14 @@ function isTabUndefined(tab) {
 
 function handleUndefinedTab() {
     if (currentHostname != null) {
-        saveCurrentHostnameData(resetHostname);
+        stopTimer();
+        saveCurrentHostnameData(function() {
+            resetHostname();
+            timeOnPage = 0;
+        });
     } else {
         resetHostname();
     }
-}
-
-function resetHostname() {
-    currentHostname = null;
-    console.log("Active hostname has changed to " + currentHostname);
 }
 
 function saveCurrentHostnameData(callback) {
@@ -41,26 +38,23 @@ function saveCurrentHostnameData(callback) {
 
     currentHostnameValues.l = today;
     lastDate < today ? currentHostnameValues.d = timeOnPage : currentHostnameValues.d += timeOnPage;
-    // currentHostnameValues.d = timeOnPage;
     currentHostnameValues.t += timeOnPage;
 
-    chrome.storage.local.get(null, (data) => {
-        data.hostnames[currentHostname] = currentHostnameValues;
-        chrome.storage.local.set(data, callback());
-    });
+    writeCurrentRecordToStorage(currentHostname, currentHostnameValues, callback);
+}
 
-    // var updateObject = {'hostnames': {}};
-    // updateObject.hostnames[currentHostname] = currentHostnameValues;
-
-    // chrome.storage.local.set(updateObject, callback());
+function resetHostname() {
+    currentHostname = null;
+    console.log("Active hostname has changed to " + currentHostname);
 }
 
 function handleDefinedTab(tab) {
     var hostname = getUrl(tab.url);
-    if (matchesCurrentHostname(hostname)) {
-        // Do nothing
+    console.log(hostname);
+    if (matchesCurrentHostname(hostname) && currentHostnameValues.l < getCurrentDate()) {
+        handleTimerReset(hostname);
     } else {
-        manageTimer(hostname);
+        checkForTimerRest(hostname);
     }
 }
 
@@ -68,29 +62,27 @@ function matchesCurrentHostname(hostname) {
     return hostname === currentHostname;
 }
 
-function manageTimer(hostname) {
+function checkForTimerRest(hostname) {
     if (!matchesCurrentHostname(null)) {
-        try {
-            stopTimer();
-            saveCurrentHostnameData(function() {
-                timeOnPage = 0;
-                getRecordsFromStorage(hostname, startTimer);
-                // startController(hostname);
-            })
-        } catch (e) {
-            console.log("No timer running");
-            getRecordsFromStorage(hostname, startTimer);
-        }
+        handleTimerReset(hostname);
     } else {
         console.log("No previous record found");
-        getRecordsFromStorage(hostname, startTimer);
+        getRecordFromStorage(hostname, startTimer);
     }
 }
 
-// function startController(hostname) {
-//     startTimer();
-//     currentHostname = hostname;
-// }
+function handleTimerReset(hostname) {
+    try {
+        stopTimer();
+        saveCurrentHostnameData(function () {
+            timeOnPage = 0;
+            getRecordFromStorage(hostname, startTimer);
+        })
+    } catch (e) {
+        console.log("No timer running");
+        getRecordFromStorage(hostname, startTimer);
+    }
+}
 
 function startTimer() {
     counterProcessId = setInterval(() => {
@@ -101,29 +93,4 @@ function startTimer() {
 
 function stopTimer() {
     clearInterval(counterProcessId);
-}
-
-function getRecordsFromStorage(record, callback) {
-    chrome.storage.local.get('hostnames', (hosts) => {
-        console.log(hosts);
-        if (hosts.hostnames.hasOwnProperty(record)) {
-            console.log("\nrecord found!\n")
-            currentHostnameValues = hosts.hostnames[record]
-            if (currentHostnameValues.l < getCurrentDate()) {
-                currentHostnameValues.l = getCurrentDate();
-                currentHostnameValues.d = 0;
-            }
-            console.log(currentHostnameValues);
-        } else {
-            console.log("\nrecord not found!\n");
-            // var newHost = {}
-            // newHost[record] = { l: getCurrentDate(), d: 0, t: 0 }
-            currentHostnameValues = { l: getCurrentDate(), d: 0, t: 0 };
-            console.log(currentHostnameValues);
-        }
-        // timeOnPage = currentHostnameValues.d;
-        console.log(timeOnPage);
-        currentHostname = record;
-        callback();
-    });
 }

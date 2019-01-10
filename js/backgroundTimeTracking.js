@@ -1,3 +1,9 @@
+/*
+Author: fuzzylimes
+Created: 12/27/2018
+Last: 01/09/2019
+*/
+
 let activeTabId = 0;
 let timeOnPage = 0;
 let counterProcessId = 0;
@@ -7,78 +13,38 @@ const UPDATE_TIME_IN_MS = 1000;
 
 let currentHostnameValues = null;
 
-// function handleUpdate(tabId, changeInfo, tab) {
-
-//     console.log(changeInfo);
-//     if (changeInfo['status'] === 'complete') {
-//         console.log(JSON.stringify(tab));
-//         if (typeof tab !== 'undefined') {
-//             var hostname = getUrl(tab.url);
-//             console.log(hostname + "!");
-    
-//             console.log(currentHostname)
-//             if (matchesCurrentHostname(hostname)) {
-//                 console.log("Active hostname remains the same " + hostname);
-//             } else {
-//                 try  {
-//                     stopTimer();
-//                     timeOnPage = 0;
-//                 } catch(e) {
-//                     console.log("No timer running");
-//                 }
-//                 startTimer();
-//                 currentHostname = hostname;
-//             }
-//         } else {
-//             currentHostname = null;
-//             console.log("Active hostname has changed to " + currentHostname);
-//         }
-
-//     }
-// }
-
-// function getRecordsFromStorage(record, callback) {
-//     chrome.storage.local.get('hostnames', (hosts) => {
-//         if (hosts.hostnames.hasOwnProperty(record)) {
-//             callback(hosts.hostnames[record]);
-//         } else {
-//             var newHost = {}
-//             var lastUpdate = new Date();
-//             newHost[record] = {l: lastUpdate, d: 0, t: 0}
-//             callback(newHost)
-//         }
-//     });
-// }
-
-// function startTimer() {
-//     counterProcessId = setInterval(() => {
-//         timeOnPage += 1;
-//         // chrome.runtime.sendMessage({ updateBadge: true, value: timeOnPage });
-//         updateBadge(formatBadgeValue(timeOnPage), PURPLE);
-//     }, (UPDATE_TIME_IN_MS));
-// }
-
-// function stopTimer() {
-//     clearInterval(counterProcessId);
-// }
-
+// This is so ugly... barf
 function handleStateChange(newState) {
     console.log(newState);
     switch (newState) {
         case "idle":
         case "locked":
-            saveCurrentHostnameData(function() {
-                stopTimer();
-                timeOnPage = 0;
-            });
+        case -1:
+            if (currentHostname != null) {
+                try {
+                    stopTimer();
+                    saveCurrentHostnameData(function () {
+                        timeOnPage = 0;
+                        currentHostname = null;
+                    });
+                } catch(e) {
+                    console.log(e);
+                }
+            }
             break;
-        case "active":
-            // getActiveTab(activeTabId);
-            startTimer();
         default:
-            break;
+            chrome.windows.getCurrent((window) => {
+                if (window.id > -1) {
+                    chrome.tabs.getAllInWindow(window.id, (tabs) => {
+                        tabs.forEach(tab => {
+                            if (tab.active) {ß
+                                getTabForUpdate(tab.id);
+                            }
+                        });
+                    })
+                }
+            })
     }
-    // TODO: add logic for state changes idle, locked, active
 }
 
 function activeTab(activeInfo) {
@@ -119,20 +85,11 @@ function getUrl(url) {
     return (new URL(url)).hostname;
 }
 
-// function matchesCurrentHostname(hostname) {
-//     return currentHostname === hostname;
-// }
-
-
-
 chrome.tabs.onUpdated.addListener(handlePageUpdate);
 chrome.tabs.onActivated.addListener(activeTab);
 chrome.idle.onStateChanged.addListener(handleStateChange);
 chrome.windows.onFocusChanged.addListener(function(windowId) {
-    console.log(windowId);
-    if (windowId != 0) {
-        
-    }
+    handleStateChange(windowId);
 })
 // chrome.windows.onRemoved.addListener
 // chrome.tabs.onRemoved.addListener(HandleRemove);

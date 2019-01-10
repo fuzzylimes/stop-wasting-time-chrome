@@ -1,7 +1,7 @@
 /*
 Author: fuzzylimes
 Created: 12/27/2018
-Last: 12/27/2018
+Last: 01/09/2019
 */
 
 const PURPLE = '#6B459A';
@@ -35,7 +35,7 @@ updateBadge('?', GRAY);
 // Check whether new version is installed
 chrome.runtime.onInstalled.addListener(function (details) {
     if (details.reason == "install") {
-        chrome.storage.local.set({ 'state': false, 'hostnames': {} });
+        chrome.storage.local.set({ 'state': false });
         turnOff();
     } else if (details.reason == "update") {
         var thisVersion = chrome.runtime.getManifest().version;
